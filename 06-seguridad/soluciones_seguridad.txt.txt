@@ -1,0 +1,22 @@
+=====================================================================
+INFORME DE MITIGACIÓN DE VULNERABILIDADES - OWASP ZAP
+PROYECTO: SISTEMA DE GESTIÓN DE UTENSILIOS DE COCINA
+=====================================================================
+
+1. VULNERABILIDAD DETECTADA: Absence of Anti-CSRF Tokens
+   - Riesgo: Medio
+   - Descripción: Los formularios de login y registro de utensilios no validan la autenticidad de la petición de origen.
+   - Solución Aplicada: Se implementó la generación de un token aleatorio por sesión ($_SESSION['csrf_token']) en PHP, el cual se inyecta como un campo oculto en cada formulario y se valida estrictamente en el backend antes de procesar transacciones de stock o autenticaciones.
+
+2. VULNERABILIDAD DETECTADA: Cookie No HttpOnly / Secure Flag
+   - Riesgo: Bajo
+   - Descripción: La cookie de sesión PHPSESSID es accesible mediante scripts maliciosos de JavaScript.
+   - Solución Aplicada: Se modificó la configuración de inicio de sesión en el archivo de cabecera PHP agregando la instrucción:
+     session_start(['cookie_httponly' => true, 'cookie_secure' => false]); // secure en true para producción con HTTPS.
+
+3. VULNERABILIDAD DETECTADA: X-Content-Type-Options Header Missing
+   - Riesgo: Bajo
+   - Descripción: El navegador podría intentar adivinar el tipo de contenido cargado (MIME sniffing).
+   - Solución Aplicada: Se configuró en el archivo de rutas principal del backend el envío forzado de cabeceras de seguridad:
+     header("X-Content-Type-Options: nosniff");
+     header("X-Frame-Options: DENY");

@@ -1,0 +1,110 @@
+{
+	"info": {
+		"_postman_id": "b3c4d5e6-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+		"name": "Pruebas API - Cocina Local",
+		"description": "Colección de peticiones HTTP orientadas a los endpoints del servidor local de la cocina.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login - Exitoso",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"usuario\": \"test_admin\",\n    \"password\": \"Admin123!\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost/Cocina/backend/api/login.php",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"path": [ "Cocina", "backend", "api", "login.php" ]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Código de estado es 200 - OK', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('La respuesta contiene confirmación de acceso', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "Maestro - Crear Utensilio Válido",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"codigo_utensilio\": \"TEST_POSTMAN_01\",\n    \"nombre\": \"Licuadora Industrial\",\n    \"descripcion\": \"Licuadora para pruebas de cocina\",\n    \"stock\": 10\n}"
+				},
+				"url": {
+					"raw": "http://localhost/Cocina/backend/api/utensilios.php",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"path": [ "Cocina", "backend", "api", "utensilios.php" ]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Código de estado es 200 o 201', function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		},
+		{
+			"name": "Transaccional - Registro Inválido",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id_usuario\": 1,\n    \"id_utensilio\": 1,\n    \"cantidad\": -10,\n    \"tipo_movimiento\": \"SALIDA\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost/Cocina/backend/api/movimientos.php",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"path": [ "Cocina", "backend", "api", "movimientos.php" ]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Código de respuesta es 400 por error de negocio', function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			]
+		}
+	]
+}

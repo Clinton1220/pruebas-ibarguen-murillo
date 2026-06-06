@@ -1,0 +1,4 @@
+ID,Petición (Tiempo),Marca de tiempo Respuesta,Método,URL,Código,Razón,RTT,Tamaño de la Cabecera de Respuesta,Respuesta (Tamaño del cuerpo)
+48,Sun May 31 20:41:36 COT 2026,Sun May 31 20:41:36 COT 2026,GET,http://localhost/cocina/views/1539935164209330614.php,200,OK,5,1013,147703
+49,Sun May 31 20:41:36 COT 2026,Sun May 31 20:41:36 COT 2026,GET,http://localhost/cocina/views/5909811681989428967.php,200,OK,4,1013,147703
+51,Sun May 31 20:41:36 COT 2026,Sun May 31 20:41:36 COT 2026,POST,http://localhost/cocina/views/login.php,200,OK,5,1013,147703

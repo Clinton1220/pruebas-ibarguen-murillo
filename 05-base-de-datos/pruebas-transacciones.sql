@@ -1,22 +1,53 @@
 USE cocina_db;
 
--- PRUEBA DE COMMIT
-SELECT COUNT(*) AS antes FROM pedidos;
+-- Asegurar existencia de IDs para evitar fallos de llaves foráneas
+SET @user_test = (SELECT MIN(id) FROM usuarios);
+SET @utensilio_test = (SELECT MIN(id) FROM utensilios);
+
+-- =====================================================================
+-- ESCENARIO A: DEMOSTRACIÓN DE TRANSACCIÓN EXITOSA (COMMIT)
+-- =====================================================================
+SELECT COUNT(*) AS pedidos_antes_commit FROM pedidos;
+
 START TRANSACTION;
-INSERT INTO pedidos (numero_pedido, cliente_id, monto_total, estado, metodo_pago, direccion_entrega, notas)
-VALUES ('PRUEBA_COMMIT', 1, 99.99, 'pendiente', 'efectivo', 'Calle pruebas', 'PRUEBA_COMMIT');
-SELECT * FROM pedidos WHERE numero_pedido = 'PRUEBA_COMMIT';
+
+-- Insertar un pedido de prueba
+INSERT INTO pedidos (cliente_id, total, estado_pago, creado_at) 
+VALUES (@user_test, 235000.00, 'PRUEBA_COMMIT_OK', NOW());
+
+-- Verificar existencia temporal dentro de la sesión de la transacción
+SELECT * FROM pedidos WHERE estado_pago = 'PRUEBA_COMMIT_OK';
+
 COMMIT;
-SELECT COUNT(*) AS despues FROM pedidos;
 
--- PRUEBA DE ROLLBACK
-SELECT COUNT(*) AS antes FROM pedidos;
+-- Confirmar persistencia permanente tras el COMMIT
+SELECT COUNT(*) AS pedidos_despues_commit FROM pedidos;
+SELECT * FROM pedidos WHERE estado_pago = 'PRUEBA_COMMIT_OK';
+
+
+-- =====================================================================
+-- ESCENARIO B: DEMOSTRACIÓN DE TRANSACCIÓN REVERTIDA (ROLLBACK)
+-- =====================================================================
+SELECT COUNT(*) AS pedidos_antes_rollback FROM pedidos;
+
 START TRANSACTION;
-INSERT INTO pedidos (numero_pedido, cliente_id, monto_total, estado, metodo_pago, direccion_entrega, notas)
-VALUES ('PRUEBA_ROLLBACK', 1, 55.55, 'pendiente', 'efectivo', 'Calle pruebas', 'PRUEBA_ROLLBACK');
-SELECT * FROM pedidos WHERE numero_pedido = 'PRUEBA_ROLLBACK';
-ROLLBACK;
-SELECT COUNT(*) AS despues FROM pedidos;
 
--- Limpieza final
-DELETE FROM pedidos WHERE numero_pedido IN ('PRUEBA_COMMIT','PRUEBA_ROLLBACK');
+-- Insertar un pedido simulado que fallará o se cancelará
+INSERT INTO pedidos (cliente_id, total, estado_pago, creado_at) 
+VALUES (@user_test, 999999.00, 'PRUEBA_ROLLBACK_ERR', NOW());
+
+-- El registro existe temporalmente aquí
+SELECT * FROM pedidos WHERE estado_pago = 'PRUEBA_ROLLBACK_ERR';
+
+-- Detectamos una anomalía o cancelación simulada y revertimos todo
+ROLLBACK;
+
+-- Confirmar que el ROLLBACK eliminó el registro de la memoria física y dejó todo intacto
+SELECT COUNT(*) AS pedidos_despues_rollback FROM pedidos;
+SELECT * FROM pedidos WHERE estado_pago = 'PRUEBA_ROLLBACK_ERR';
+
+
+-- =====================================================================
+-- LIMPIEZA DE TRANSACCIONES DE EVALUACIÓN
+-- =====================================================================
+DELETE FROM pedidos WHERE estado_pago IN ('PRUEBA_COMMIT_OK', 'PRUEBA_ROLLBACK_ERR');

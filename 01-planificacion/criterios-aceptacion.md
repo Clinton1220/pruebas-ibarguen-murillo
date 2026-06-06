@@ -1,24 +1,27 @@
-# Criterios de Aceptación
+# Criterios de Aceptación del Sistema
 
-| ID     | Módulo         | Criterio de aceptación |
-|--------|----------------|------------------------------------------------------------------------------------------------------------------|
-| CA-001 | Login          | Dado un usuario registrado y activo, cuando ingresa credenciales correctas, entonces accede al sistema.           |
-| CA-002 | Login          | Dado un usuario con contraseña incorrecta, cuando intenta ingresar, entonces el sistema muestra mensaje genérico. |
-| CA-003 | Login          | Dado un usuario inactivo, cuando intenta ingresar, entonces el sistema rechaza el acceso.                         |
-| CA-004 | Usuario        | Dado el formulario de creación, cuando se ingresan todos los campos obligatorios, el usuario es creado.           |
-| CA-005 | Usuario        | Dado un email repetido, cuando se intenta crear, entonces rechaza la acción.                                     |
-| CA-006 | Maestro        | Dado el formulario correcto, cuando envía, el utensilio queda en base de datos y se muestra listado.              |
-| CA-007 | Maestro        | Dado un campo obligatorio vacío, valida en tiempo real y no envía.                                               |
-| CA-008 | Maestro        | Cuando edita un utensilio y guarda, se reflejan los cambios en DB y pantalla.                                    |
-| CA-009 | Maestro        | Si intenta eliminar un utensilio usado en pedidos, rechaza la eliminación.                                       |
-| CA-010 | Maestro        | Cuando desactiva un utensilio, deja de aparecer en ventas.                                                        |
-| CA-011 | Transaccional  | Al registrar pedido con datos correctos, crea pedido, detalles y factura.                                        |
-| CA-012 | Transaccional  | Pedido con monto 0 o negativo es rechazado y muestra error.                                                      |
-| CA-013 | Transaccional  | Si usuario invita manipular URL, sin login, es redirigido a login.                                               |
-| CA-014 | Transaccional  | Solo usuarios activos pueden generar pedidos.                                                                    |
-| CA-015 | Ofertas        | Descuentos activos solo se aplican a utensilios con oferta vigente en día/DB.                                    |
-| CA-016 | Facturación    | Factura se genera automáticamente al confirmar pedido.                                                           |
-| CA-017 | Seguridad      | Tras 5 intentos fallidos login, usuario es bloqueado.                                                            |
-| CA-018 | Seguridad      | Solicitud de reseteo de contraseña expira a los 10 minutos.                                                      |
-| CA-019 | Usuario        | Email de confirmación se envía al crear usuario nuevo.                                                           |
-| CA-020 | Maestro        | Solo administradores pueden agregar, editar o eliminar utensilios.                                               |
+## Módulo 1: Login
+* **CA-001:** Dado un usuario cocinero registrado y activo, cuando ingresa sus credenciales correctas, entonces el sistema lo redirige al panel principal en menos de 3 segundos.
+* **CA-002:** Dado un usuario con contraseña incorrecta, cuando intenta iniciar sesión, entonces el sistema muestra un mensaje de error genérico sin revelar cuál campo falló.
+* **CA-003:** Dado un usuario administrador inactivo, cuando intenta autenticarse, entonces el sistema deniega el acceso y muestra un mensaje indicando que la cuenta está deshabilitada.
+* **CA-004:** Dado el formulario de login, cuando se intenta enviar con los campos vacíos, entonces el sistema muestra una validación visual en el navegador y no envía la petición.
+* **CA-005:** Dado un usuario que intenta ingresar caracteres especiales maliciosos en el campo de texto, cuando presiona ingresar, entonces el sistema sanitiza la entrada y bloquea la solicitud de inicio de sesión.
+* **CA-006:** Dado un usuario autenticado, cuando hace clic en "Cerrar Sesión", entonces el sistema destruye el token o sesión activa y lo redirige al Login.
+
+## Módulo 2: Maestro (CRUD Utensilios)
+* **CA-007:** Dado el formulario de creación de utensilios, cuando se ingresan todos los campos obligatorios correctamente (nombre, código, stock), entonces el registro se guarda y aparece en el listado general.
+* **CA-008:** Dado que se deja el campo "Nombre del Utensilio" vacío, cuando se intenta guardar el formulario, entonces el sistema muestra una alerta de campo obligatorio y bloquea el envío.
+* **CA-009:** Dado un código de utensilio que ya existe en el sistema (ej. `TEST_001`), cuando se intenta registrar uno nuevo con ese mismo código, entonces el sistema muestra un error de duplicidad.
+* **CA-010:** Dado un utensilio previamente guardado, cuando se modifican sus datos (ej. actualizar la cantidad de stock) y se guarda, entonces los cambios se reflejan inmediatamente en la base de datos y la interfaz.
+* **CA-011:** Dado un utensilio sin transacciones ni movimientos asociados, cuando el usuario confirma su eliminación, entonces el registro se borra permanentemente del listado.
+* **CA-012:** Dado un utensilio que ya ha sido prestado o movido en el módulo transaccional, cuando se intenta eliminar desde el módulo maestro, entonces el sistema impide la eliminación por integridad referencial y muestra un mensaje explicativo.
+* **CA-013:** Dado el buscador del módulo maestro, cuando se ingresa el nombre de un utensilio existente, entonces el listado se filtra mostrando únicamente las coincidencias exactas o parciales.
+
+## Módulo 3: Transaccional (Movimientos / Préstamos de Cocina)
+* **CA-014:** Dado el formulario transaccional de préstamos completo con datos válidos, cuando se confirma la operación, entonces el sistema registra el movimiento con estado 'COMPLETADA' y actualiza el stock actual del utensilio.
+* **CA-015:** Dado un registro de movimiento, cuando se ingresa una cantidad o monto negativo o igual a cero, entonces el sistema rechaza la transacción mostrando un mensaje de validación de rango.
+* **CA-016:** Dado un préstamo de utensilio, cuando el stock disponible es menor a la cantidad solicitada, entonces el sistema bloquea el registro informando la falta de existencias.
+* **CA-017:** Dado un usuario que no ha iniciado sesión, cuando intenta acceder al módulo transaccional escribiendo la URL directamente en el navegador, entonces el sistema lo redirige forzosamente a la pantalla de login.
+* **CA-018:** Dado un movimiento registrado, cuando se verifica en la base de datos, entonces este debe contener obligatoriamente la fecha y hora exacta en la que se procesó (`NOW()`).
+* **CA-019:** Dado un fallo inesperado en el servidor durante el procesamiento de un movimiento que afecta a varias tablas, cuando la operación se interrumpe, entonces el sistema debe aplicar un rollback completo manteniendo la base de datos intacta.
+* **CA-020:** Dado el formulario de transacciones, cuando se asocia un ID de usuario inexistente o alterado, entonces la base de datos rechaza la inserción por fallo de clave foránea.
